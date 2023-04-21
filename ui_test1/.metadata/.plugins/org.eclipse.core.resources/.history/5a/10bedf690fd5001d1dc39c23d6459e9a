@@ -1,0 +1,582 @@
+package com.snethlios.dao;
+
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import org.hamcrest.CoreMatchers;
+
+import org.mockito.ArgumentMatchers;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.junit.Assert;
+
+import org.testng.IObjectFactory;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.ObjectFactory;
+import org.testng.annotations.Test;
+
+import com.snethlios.entity.KhachHang;
+import com.snethlios.entity.SanPham;
+import com.snethlios.utils.JdbcHelper;
+import com.snethlios.utils.XDate;
+
+@PrepareForTest({ JdbcHelper.class, SanPhamDao.class })
+public class SanPhamDaoTest {
+	SanPhamDao sanPhamDAO;
+	SanPhamDao sanPhamDAOSPY;
+
+	@ObjectFactory
+	public IObjectFactory getObjectFactory() {
+		return new org.powermock.modules.testng.PowerMockObjectFactory();
+	}
+
+	@BeforeMethod
+	public void setUpMethod() {
+		sanPhamDAO = new SanPhamDao();
+		PowerMockito.mockStatic(JdbcHelper.class);
+		sanPhamDAOSPY = PowerMockito.spy(new SanPhamDao());
+	}
+
+	// insert
+	@Test
+	public void testInsertValid() {
+		SanPham sanpham = new SanPham();
+		System.out.println("test insert valid");
+		sanpham.setMaSp("AD001");
+		sanpham.setTenSp("Sản phẩm 1");
+		sanpham.setLoai("Giày thể thao");
+		sanpham.setDonGia(100.0);
+		sanpham.setSoLuong(10);
+		sanpham.setMau("Màu xanh");
+		sanpham.setKichThuoc(44);
+		sanpham.setHang("Nike");
+		System.out.println(sanpham.getHang());
+		sanpham.setNgayNhap(XDate.toDate(XDate.toString(new Date(), "yyyy/MM/dd"), "yyyy/MM/dd"));
+		System.out.println(sanpham.getNgayNhap());
+		sanpham.setMaHinh("H1");
+		sanpham.setMaNV("TeoNV");
+		sanpham.setMaKM("KM01");
+		sanpham.setTrangThai(false);
+		sanpham.setGiamGia(5);
+		SanPhamDao spDAO = new SanPhamDao();
+		spDAO.insert(sanpham);
+	}
+
+	@Test(expectedExceptions = Exception.class)
+	public void testInsertNull() {
+		SanPham sanpham = null;
+		System.out.println("test insert null");
+		SanPhamDao spDAO = new SanPhamDao();
+		spDAO.insert(sanpham);
+	}
+
+	@Test(expectedExceptions = Exception.class)
+	public void testInsertEmpty() {
+		SanPham sanpham = new SanPham();
+		System.out.println("test insert empty");
+		SanPhamDao spDAO = new SanPhamDao();
+		spDAO.insert(sanpham);
+	}
+
+	@Test
+	public void testInsert_PrimaryKeyEmpty() {
+		SanPham sanpham = new SanPham();
+		System.out.println("test insert primary key empty");
+		sanpham.setMaSp(null);
+		sanpham.setTenSp("Sản phẩm 1");
+		sanpham.setLoai("Giày thể thao");
+		sanpham.setDonGia(100.0);
+		sanpham.setSoLuong(10);
+		sanpham.setMau("Màu xanh");
+		sanpham.setKichThuoc(44);
+		sanpham.setHang("Nike");
+		System.out.println(sanpham.getHang());
+		sanpham.setNgayNhap(XDate.toDate(XDate.toString(new Date(), "yyyy/MM/dd"), "yyyy/MM/dd"));
+		System.out.println(sanpham.getNgayNhap());
+		sanpham.setMaHinh("H1");
+		sanpham.setMaNV("TeoNV");
+		sanpham.setMaKM("KM01");
+		sanpham.setTrangThai(false);
+		sanpham.setGiamGia(5);
+		SanPhamDao spDAO = new SanPhamDao();
+		spDAO.insert(sanpham);
+	}
+
+	@Test
+	public void testInsert_FKEmpty() {
+		SanPham sanpham = new SanPham();
+		System.out.println("test insert fk empty");
+		sanpham.setMaSp("AD1");
+		sanpham.setTenSp("Sản phẩm 1");
+		sanpham.setLoai("Giày thể thao");
+		sanpham.setDonGia(100.0);
+		sanpham.setSoLuong(10);
+		sanpham.setMau("Màu xanh");
+		sanpham.setKichThuoc(44);
+		sanpham.setHang("Nike");
+		System.out.println(sanpham.getHang());
+		sanpham.setNgayNhap(XDate.toDate(XDate.toString(new Date(), "yyyy/MM/dd"), "yyyy/MM/dd"));
+		System.out.println(sanpham.getNgayNhap());
+		sanpham.setMaHinh("");
+		sanpham.setMaNV("");
+		sanpham.setMaKM("");
+		sanpham.setTrangThai(false);
+		sanpham.setGiamGia(5);
+		SanPhamDao spDAO = new SanPhamDao();
+		spDAO.insert(sanpham);
+	}
+
+	@Test
+	public void testInsert_TenSPEmpty() {
+		SanPham sanpham = new SanPham();
+		System.out.println("test insert tensp empty");
+		sanpham.setMaSp("AD1");
+		sanpham.setTenSp("");
+		sanpham.setLoai("Giày thể thao");
+		sanpham.setDonGia(100.0);
+		sanpham.setSoLuong(10);
+		sanpham.setMau("Màu xanh");
+		sanpham.setKichThuoc(44);
+		sanpham.setHang("Nike");
+		System.out.println(sanpham.getHang());
+		sanpham.setNgayNhap(XDate.toDate(XDate.toString(new Date(), "yyyy/MM/dd"), "yyyy/MM/dd"));
+		System.out.println(sanpham.getNgayNhap());
+		sanpham.setMaHinh("H1");
+		sanpham.setMaNV("TeoNV");
+		sanpham.setMaKM("KM01");
+		sanpham.setTrangThai(false);
+		sanpham.setGiamGia(5);
+		SanPhamDao spDAO = new SanPhamDao();
+		spDAO.insert(sanpham);
+	}
+
+	@Test
+	public void testInsert_LoaiSPEmpty() {
+		SanPham sanpham = new SanPham();
+		System.out.println("test insert loaisp empty");
+		sanpham.setMaSp("AD1");
+		sanpham.setTenSp("Addidas 01");
+		sanpham.setLoai("");
+		sanpham.setDonGia(100.0);
+		sanpham.setSoLuong(10);
+		sanpham.setMau("Màu xanh");
+		sanpham.setKichThuoc(44);
+		sanpham.setHang("Nike");
+		System.out.println(sanpham.getHang());
+		sanpham.setNgayNhap(XDate.toDate(XDate.toString(new Date(), "yyyy/MM/dd"), "yyyy/MM/dd"));
+		System.out.println(sanpham.getNgayNhap());
+		sanpham.setMaHinh("H1");
+		sanpham.setMaNV("TeoNV");
+		sanpham.setMaKM("KM01");
+		sanpham.setTrangThai(false);
+		sanpham.setGiamGia(5);
+		SanPhamDao spDAO = new SanPhamDao();
+		spDAO.insert(sanpham);
+	}
+
+	@Test(expectedExceptions = Exception.class)
+	public void testInsert_DonGiaEmpty() {
+		SanPham sanpham = new SanPham();
+		System.out.println("test insert loaisp empty");
+		sanpham.setMaSp("AD1");
+		sanpham.setTenSp("Addidas 01");
+		sanpham.setLoai("Giày thể thao");
+		sanpham.setDonGia(Double.parseDouble(""));
+		sanpham.setSoLuong(10);
+		sanpham.setMau("Màu xanh");
+		sanpham.setKichThuoc(44);
+		sanpham.setHang("Nike");
+		System.out.println(sanpham.getHang());
+		sanpham.setNgayNhap(XDate.toDate(XDate.toString(new Date(), "yyyy/MM/dd"), "yyyy/MM/dd"));
+		System.out.println(sanpham.getNgayNhap());
+		sanpham.setMaHinh("H1");
+		sanpham.setMaNV("TeoNV");
+		sanpham.setMaKM("KM01");
+		sanpham.setTrangThai(false);
+		sanpham.setGiamGia(5);
+		SanPhamDao spDAO = new SanPhamDao();
+		spDAO.insert(sanpham);
+	}
+
+	@Test
+	public void testInsert_SoLuongEmpty() {
+		SanPham sanpham = new SanPham();
+		System.out.println("test insert loaisp empty");
+		sanpham.setMaSp("AD1");
+		sanpham.setTenSp("Addidas 01");
+		sanpham.setLoai("Giày thể thao");
+		sanpham.setDonGia(100.0);
+		sanpham.setSoLuong(Integer.parseInt(""));
+		sanpham.setMau("Màu xanh");
+		sanpham.setKichThuoc(44);
+		sanpham.setHang("Nike");
+		System.out.println(sanpham.getHang());
+		sanpham.setNgayNhap(XDate.toDate(XDate.toString(new Date(), "yyyy/MM/dd"), "yyyy/MM/dd"));
+		System.out.println(sanpham.getNgayNhap());
+		sanpham.setMaHinh("H1");
+		sanpham.setMaNV("TeoNV");
+		sanpham.setMaKM("KM01");
+		sanpham.setTrangThai(false);
+		sanpham.setGiamGia(5);
+		SanPhamDao spDAO = new SanPhamDao();
+		spDAO.insert(sanpham);
+	}
+
+	@Test
+	public void testInsert_MauEmpty() {
+		SanPham sanpham = new SanPham();
+		System.out.println("test insert loaisp empty");
+		sanpham.setMaSp("AD1");
+		sanpham.setTenSp("Addidas 01");
+		sanpham.setLoai("Giày thể thao");
+		sanpham.setDonGia(100.0);
+		sanpham.setSoLuong(1);
+		sanpham.setMau("");
+		sanpham.setKichThuoc(44);
+		sanpham.setHang("Nike");
+		System.out.println(sanpham.getHang());
+		sanpham.setNgayNhap(XDate.toDate(XDate.toString(new Date(), "yyyy/MM/dd"), "yyyy/MM/dd"));
+		System.out.println(sanpham.getNgayNhap());
+		sanpham.setMaHinh("H1");
+		sanpham.setMaNV("TeoNV");
+		sanpham.setMaKM("KM01");
+		sanpham.setTrangThai(false);
+		sanpham.setGiamGia(5);
+		SanPhamDao spDAO = new SanPhamDao();
+		spDAO.insert(sanpham);
+	}
+
+	@Test
+	public void testInsert_KichThuocEmpty() {
+		SanPham sanpham = new SanPham();
+		System.out.println("test insert loaisp empty");
+		sanpham.setMaSp("AD1");
+		sanpham.setTenSp("Addidas 01");
+		sanpham.setLoai("Giày thể thao");
+		sanpham.setDonGia(100.0);
+		sanpham.setSoLuong(1);
+		sanpham.setMau("Xanh");
+		sanpham.setKichThuoc(Integer.parseInt(""));
+		sanpham.setHang("Nike");
+		System.out.println(sanpham.getHang());
+		sanpham.setNgayNhap(XDate.toDate(XDate.toString(new Date(), "yyyy/MM/dd"), "yyyy/MM/dd"));
+		System.out.println(sanpham.getNgayNhap());
+		sanpham.setMaHinh("H1");
+		sanpham.setMaNV("TeoNV");
+		sanpham.setMaKM("KM01");
+		sanpham.setTrangThai(false);
+		sanpham.setGiamGia(5);
+		SanPhamDao spDAO = new SanPhamDao();
+		spDAO.insert(sanpham);
+	}
+
+	@Test(expectedExceptions = Exception.class)
+	public void testInsert_HangEmpty() {
+		SanPham sanpham = new SanPham();
+		System.out.println("test insert loaisp empty");
+		sanpham.setMaSp("AD1");
+		sanpham.setTenSp("Addidas 01");
+		sanpham.setLoai("Giày thể thao");
+		sanpham.setDonGia(100.0);
+		sanpham.setSoLuong(1);
+		sanpham.setMau("Xanh");
+		sanpham.setKichThuoc(Integer.parseInt(""));
+		sanpham.setHang("Nike");
+		System.out.println(sanpham.getHang());
+		sanpham.setNgayNhap(XDate.toDate(XDate.toString(new Date(), "yyyy/MM/dd"), "yyyy/MM/dd"));
+		System.out.println(sanpham.getNgayNhap());
+		sanpham.setMaHinh("H1");
+		sanpham.setMaNV("TeoNV");
+		sanpham.setMaKM("KM01");
+		sanpham.setTrangThai(false);
+		sanpham.setGiamGia(5);
+		SanPhamDao spDAO = new SanPhamDao();
+		spDAO.insert(sanpham);
+	}
+	// update
+
+	@Test
+	public void updateInvalid() {
+		System.out.println("test update ");
+		SanPham sanpham = new SanPham();
+		sanpham.setTenSp("Addidas 01");
+		sanpham.setLoai("Giày thể thao loại 1");
+		sanpham.setDonGia(100.0);
+		sanpham.setSoLuong(10);
+		sanpham.setMau("Màu xanh");
+		sanpham.setKichThuoc(44);
+		sanpham.setHang("Nike");
+		sanpham.setNgayNhap(XDate.toDate(XDate.toString(new Date(), "yyyy/MM/dd"), "yyyy/MM/dd"));
+		sanpham.setMaHinh("H2");
+		sanpham.setMaNV("TeoNV");
+		sanpham.setMaKM("KM01");
+		sanpham.setMaSp("AD1");
+		SanPhamDao spDAO = new SanPhamDao();
+		spDAO.update(sanpham);
+	}
+
+	@Test(expectedExceptions = Exception.class)
+	public void updateNull() {
+		System.out.println("test update null");
+		SanPham masSP = null;
+		SanPhamDao instance = new SanPhamDao();
+		instance.update(masSP);
+	}
+
+	@Test(expectedExceptions = Exception.class)
+	public void updateEmpty() {
+		System.out.println("test update empty");
+		SanPham model = new SanPham();
+		SanPhamDao instance = new SanPhamDao();
+		instance.update(model);
+	}
+
+	@Test
+	public void updateMaSP_empty() {
+		System.out.println("test update ");
+		SanPham sanpham = new SanPham();
+		sanpham.setTenSp("Addidas 01");
+		sanpham.setLoai("Giày thể thao loại 1");
+		sanpham.setDonGia(100.0);
+		sanpham.setSoLuong(10);
+		sanpham.setMau("Màu xanh");
+		sanpham.setKichThuoc(44);
+		sanpham.setHang("Nike");
+		sanpham.setNgayNhap(XDate.toDate(XDate.toString(new Date(), "yyyy/MM/dd"), "yyyy/MM/dd"));
+		sanpham.setMaHinh("H2");
+		sanpham.setMaNV("TeoNV");
+		sanpham.setMaKM("KM01");
+		sanpham.setMaSp("");
+		SanPhamDao spDAO = new SanPhamDao();
+		spDAO.update(sanpham);
+	}
+
+	@Test
+	public void updateTenSP_empty() {
+		System.out.println("test update ");
+		SanPham sanpham = new SanPham();
+		sanpham.setTenSp("");
+		sanpham.setLoai("Giày thể thao loại 1");
+		sanpham.setDonGia(100.0);
+		sanpham.setSoLuong(10);
+		sanpham.setMau("Màu xanh");
+		sanpham.setKichThuoc(44);
+		sanpham.setHang("Nike");
+		sanpham.setNgayNhap(XDate.toDate(XDate.toString(new Date(), "yyyy/MM/dd"), "yyyy/MM/dd"));
+		sanpham.setMaHinh("H2");
+		sanpham.setMaNV("TeoNV");
+		sanpham.setMaKM("KM01");
+		sanpham.setMaSp("AD1");
+		SanPhamDao spDAO = new SanPhamDao();
+		spDAO.update(sanpham);
+	}
+
+	@Test
+	public void updateLoaiSP_empty() {
+		System.out.println("test update ");
+		SanPham sanpham = new SanPham();
+		sanpham.setTenSp("Adidas 01");
+		sanpham.setLoai("");
+		sanpham.setDonGia(100.0);
+		sanpham.setSoLuong(10);
+		sanpham.setMau("Màu xanh");
+		sanpham.setKichThuoc(44);
+		sanpham.setHang("Nike");
+		sanpham.setNgayNhap(XDate.toDate(XDate.toString(new Date(), "yyyy/MM/dd"), "yyyy/MM/dd"));
+		sanpham.setMaHinh("H2");
+		sanpham.setMaNV("TeoNV");
+		sanpham.setMaKM("KM01");
+		sanpham.setMaSp("AD1");
+		SanPhamDao spDAO = new SanPhamDao();
+		spDAO.update(sanpham);
+	}
+
+	// delete
+	@Test
+	public void deleteValid() {
+		System.out.println("test delete ");
+		String masp = "AD1";
+		SanPhamDao spDAO = new SanPhamDao();
+		spDAO.delete(masp);
+	}
+
+	@Test
+	public void deleteMaSP_null() {
+		System.out.println("test delete null");
+		String masp = null;
+		SanPhamDao spDAO = new SanPhamDao();
+		spDAO.delete(masp);
+	}
+
+	@Test(expectedExceptions = Exception.class)
+	public void deleteMaSP_empty() {
+		System.out.println("test delete empty");
+		String masp = "";
+		SanPhamDao spDAO = new SanPhamDao();
+		spDAO.delete(masp);
+	}
+
+	// findALL
+	@Test
+	public void testselectAll() throws Exception {
+		SanPham model = new SanPham();
+		List<SanPham> expResult = new ArrayList<>();
+		expResult.add(model);
+		PowerMockito.doReturn(expResult).when(sanPhamDAOSPY, "selectBySQL", ArgumentMatchers.anyString());
+		List<SanPham> result = sanPhamDAOSPY.selectAll();
+		Assert.assertThat(result, CoreMatchers.is(expResult));
+	}
+
+	// findByID
+	@Test
+	public void testselectByID() throws Exception {
+		String masp = "km01";
+		SanPham model = new SanPham();
+		List<SanPham> expResult = new ArrayList<>();
+		expResult.add(model);
+
+		PowerMockito.doReturn(expResult).when(sanPhamDAOSPY, "selectBySQL", ArgumentMatchers.anyString(),
+				ArgumentMatchers.any());
+		SanPham result = sanPhamDAOSPY.selectByID(masp);
+		Assert.assertThat(result, CoreMatchers.is(model));
+	}
+
+	// gio hang
+
+	@Test(expectedExceptions = Exception.class)
+	public void testAddCartValidNull() {
+		SanPham model = new SanPham();
+		int soLuong = Integer.parseInt(null);
+		model.setMaSp("NK13");
+		model.setTenSp("NIKE");
+		model.setDonGia(20000.0);
+		model.setGiamGia(2000);
+		model.setHang("nike");
+		model.setLoai("giay sneaker");
+		model.setMaHinh("BH1");
+		model.setMaKM("KH001");
+		model.setMaNV("TEONV");
+		model.setMau("Đỏ");
+		model.setNgayNhap(XDate.toDate(XDate.toString(new Date(), "yyyy/MM/dd"), "yyyy/MM/dd"));
+		model.setSoLuong(20);
+		model.setTrangThai(true);
+		model.setKichThuoc(30);
+		SanPhamDao instance = new SanPhamDao();
+		instance.insert(model);
+	}
+
+	@Test(expectedExceptions = Exception.class)
+	public void testAddCartValid() {
+		SanPham model = new SanPham();
+		int soLuong = 0;
+		if (soLuong == 0) {
+			soLuong = Integer.parseInt(null);
+		}
+		model.setMaSp("NK13");
+		model.setTenSp("NIKE");
+		model.setDonGia(20000.0);
+		model.setGiamGia(2000);
+		model.setHang("nike");
+		model.setLoai("giay sneaker");
+		model.setMaHinh("BH1");
+		model.setMaKM("KH001");
+		model.setMaNV("TEONV");
+		model.setMau("Đỏ");
+		model.setNgayNhap(XDate.toDate(XDate.toString(new Date(), "yyyy/MM/dd"), "yyyy/MM/dd"));
+		model.setSoLuong(20);
+		model.setTrangThai(true);
+		model.setKichThuoc(30);
+		SanPhamDao instance = new SanPhamDao();
+		instance.insert(model);
+	}
+
+	@Test(expectedExceptions = Exception.class)
+	public void testAddCartValidString() {
+		SanPham model = new SanPham();
+		int soLuong = Integer.parseInt("abc");
+		model.setMaSp("NK13");
+		model.setTenSp("NIKE");
+		model.setDonGia(20000.0);
+		model.setGiamGia(2000);
+		model.setHang("nike");
+		model.setLoai("giay sneaker");
+		model.setMaHinh("BH1");
+		model.setMaKM("KH001");
+		model.setMaNV("TEONV");
+		model.setMau("Đỏ");
+		model.setNgayNhap(XDate.toDate(XDate.toString(new Date(), "yyyy/MM/dd"), "yyyy/MM/dd"));
+		model.setSoLuong(20);
+		model.setTrangThai(true);
+		model.setKichThuoc(30);
+		SanPhamDao instance = new SanPhamDao();
+		instance.insert(model);
+	}
+
+	@Test
+	public void testAddCart() {
+		SanPham model = new SanPham();
+		int soLuong = 8;
+		model.setMaSp("NK13");
+		model.setTenSp("NIKE");
+		model.setDonGia(20000.0);
+		model.setGiamGia(2000);
+		model.setHang("nike");
+		model.setLoai("giay sneaker");
+		model.setMaHinh("BH1");
+		model.setMaKM("KH001");
+		model.setMaNV("TEONV");
+		model.setMau("Đỏ");
+		model.setNgayNhap(XDate.toDate(XDate.toString(new Date(), "yyyy/MM/dd"), "yyyy/MM/dd"));
+		model.setSoLuong(20);
+		model.setTrangThai(true);
+		model.setKichThuoc(30);
+		SanPhamDao instance = new SanPhamDao();
+		instance.insert(model);
+	}
+
+	@Test
+	public void testAddCartEqualsMaSp() {
+		SanPham model = new SanPham();
+		String maSp = "NK13";
+		int soLuong =4 ;
+		List<SanPham> list = new ArrayList<>();
+		for (SanPham model1 : list) {
+			if (maSp.equals(model.getMaSp())) {
+				soLuong += model.getSoLuong();
+			}
+		}
+		model.setMaSp("NK13");
+		model.setTenSp("NIKE");
+		model.setDonGia(20000.0);
+		model.setGiamGia(2000);
+		model.setHang("nike");
+		model.setLoai("giay sneaker");
+		model.setMaHinh("BH1");
+		model.setMaKM("KH001");
+		model.setMaNV("TEONV");
+		model.setMau("Đỏ");
+		model.setNgayNhap(XDate.toDate(XDate.toString(new Date(), "yyyy/MM/dd"), "yyyy/MM/dd"));
+		model.setSoLuong(20);
+		model.setTrangThai(true);
+		model.setKichThuoc(30);
+		SanPhamDao instance = new SanPhamDao();
+		instance.insert(model);
+	}
+
+	@Test
+	public void testDeleteCardWithNull() {
+		SanPham model = new SanPham();
+		String maSp = "";
+		SanPhamDao instance = new SanPhamDao();
+		instance.delete(maSp);
+	}
+	@Test
+	public void testDeleteCard() {
+		SanPham model = new SanPham();
+		String maSp = "NK1";
+		SanPhamDao instance = new SanPhamDao();
+		instance.delete(maSp);
+	}
+}

@@ -1,0 +1,328 @@
+package com.snethlios.dao;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.hamcrest.CoreMatchers;
+import org.junit.Assert;
+
+import org.mockito.ArgumentMatchers;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.testng.IObjectFactory;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.ObjectFactory;
+import org.testng.annotations.Test;
+
+import com.snethlios.entity.KhachHang;
+import com.snethlios.utils.JdbcHelper;
+import com.snethlios.utils.XDate;
+
+@PrepareForTest({ JdbcHelper.class, KhachHangDAO.class })
+public class KhachHangDAOTest {
+	KhachHangDAO khdao;
+	KhachHangDAO khdaospy;
+	HSSFWorkbook workBook;
+	HSSFSheet sheet;
+	Map<String, Object[]> TestResultNG = new HashMap<String, Object[]>();
+	int count = 0;
+
+	@ObjectFactory
+	public IObjectFactory getObjectFactory() {
+		return new org.powermock.modules.testng.PowerMockObjectFactory();
+	}
+
+	@BeforeClass
+	public void setUpClass() throws Exception {
+		System.out.println("Dz");
+
+		workBook = new HSSFWorkbook();
+		sheet = workBook.createSheet("Kết quả test");
+
+		TestResultNG.put("" + count++, new Object[] { "ID", "Test Case Description", "Test Case Procedure", "Test Data",
+				"Expected Output", "Test Date", "Result" });
+	}
+
+	@AfterClass
+	public void tearDownClass() throws Exception {
+		System.out.println("Create File Excel");
+		Set<String> keySet = TestResultNG.keySet();
+		int rowNum = 0;
+		for (String key : keySet) {
+			Row row = sheet.createRow(rowNum++);
+			Object[] objArr = TestResultNG.get(key);
+			int cellNum = 0;
+			for (Object obj : objArr) {
+				Cell cell = row.createCell(cellNum++);
+				if (obj instanceof Date) {
+					cell.setCellValue((Date) obj);
+				} else if (obj instanceof Boolean) {
+					cell.setCellValue((Boolean) obj);
+				} else if (obj instanceof String) {
+					cell.setCellValue((String) obj);
+				} else if (obj instanceof Double) {
+					cell.setCellValue((Double) obj);
+				} else if (obj instanceof Integer) {
+					cell.setCellValue((Integer) obj);
+				}
+			}
+		}
+		try {
+			FileOutputStream out = new FileOutputStream(new File("KhachHang.xls"));
+			workBook.write(out);
+			out.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			System.out.println(e.getMessage());
+		}
+	}
+
+	@BeforeMethod
+	public void setUpMethod() throws Exception {
+		khdao = new KhachHangDAO();
+		PowerMockito.mockStatic(JdbcHelper.class);
+		khdaospy = PowerMockito.spy(new KhachHangDAO());
+	}
+
+	@Test(expectedExceptions = Exception.class)
+	public void insertTestWithModelNull() {
+		KhachHang model = null;
+		KhachHangDAO instance = new KhachHangDAO();
+		instance.insert(model);
+	}
+
+	@Test()
+	public void insertTestWithModelEmpty() {
+		KhachHang model = new KhachHang();
+		KhachHangDAO instance = new KhachHangDAO();
+		instance.insert(model);
+	}
+
+	@Test()
+	public void insertTestWithModelValid() {
+		KhachHang model = new KhachHang();
+		model.setMakh("KH01");
+		model.setTenkh("Pham Dang Nguyen");
+		model.setGioiTinh(true);
+		model.setDienThoai("0383689355");
+		model.setDiaChi("Quan 12");
+		model.setGhichu("Giao vao buoi chieu");
+		KhachHangDAO instance = new KhachHangDAO();
+		instance.insert(model);
+	}
+
+	@Test()
+	public void insertTestWithNullMakh() {
+		KhachHang model = new KhachHang();
+		model.setMakh("");
+		model.setTenkh("Pham Dang Nguyen");
+		model.setGioiTinh(true);
+		model.setDienThoai("0383689355");
+		model.setDiaChi("Quan 12");
+		model.setGhichu("Giao vao buoi chieu");
+		KhachHangDAO instance = new KhachHangDAO();
+		instance.insert(model);
+	}
+
+	@Test()
+	public void insertTestWithNullTenkh() {
+		KhachHang model = new KhachHang();
+		model.setMakh("KH01");
+		model.setTenkh("");
+		model.setGioiTinh(true);
+		model.setDienThoai("0383689355");
+		model.setDiaChi("Quan 12");
+		model.setGhichu("Giao vao buoi chieu");
+		KhachHangDAO instance = new KhachHangDAO();
+		instance.insert(model);
+	}
+
+	@Test()
+	public void insertTestWithNullSDT() {
+		KhachHang model = new KhachHang();
+		model.setMakh("KH01");
+		model.setTenkh("Pham Dang Nguyen");
+		model.setGioiTinh(true);
+		model.setDienThoai("");
+		model.setDiaChi("Quan 12");
+		model.setGhichu("Giao vao buoi chieu");
+		KhachHangDAO instance = new KhachHangDAO();
+		instance.insert(model);
+	}
+
+	@Test()
+	public void insertTestWithNullAddress() {
+		KhachHang model = new KhachHang();
+		model.setMakh("KH01");
+		model.setTenkh("Pham Dang Nguyen");
+		model.setGioiTinh(true);
+		model.setDienThoai("0383689355");
+		model.setDiaChi("");
+		model.setGhichu("Giao vao buoi chieu");
+		KhachHangDAO instance = new KhachHangDAO();
+		instance.insert(model);
+	}
+
+	@Test()
+	public void insertTestWith7Number() {
+		KhachHang model = new KhachHang();
+		String phone = "0725435";
+		model.setDienThoai(phone);
+	}
+
+	@Test()
+	public void insertTestWith10Number() {
+		KhachHang model = new KhachHang();
+		String phone = "0725435894";
+		model.setDienThoai(phone);
+	}
+
+	@Test()
+	public void insertTestWith12Number() {
+		KhachHang model = new KhachHang();
+		String phone = "072543589453";
+		model.setDienThoai(phone);
+	}
+
+	@Test()
+	public void deleteWithoutMakh() {
+		String makh = null;
+		KhachHangDAO instance = new KhachHangDAO();
+		instance.delete(makh);
+	}
+
+	@Test()
+	public void deleteValid() {
+		String makh = "KH005";
+		KhachHangDAO instance = new KhachHangDAO();
+		instance.delete(makh);
+	}
+
+	@Test(expectedExceptions = Exception.class)
+	public void UpdateInvalid() {
+		KhachHang makh = null;
+		KhachHangDAO instance = new KhachHangDAO();
+		instance.update(makh);
+	}
+
+	@Test()
+	public void UpdateWithoutTenkh() {
+		KhachHang model = new KhachHang();
+		model.setTenkh(null);
+		KhachHangDAO instance = new KhachHangDAO();
+		instance.update(model);
+	}
+
+	@Test()
+	public void UpdateWithoutPhoneNumber() {
+		KhachHang model = new KhachHang();
+		model.setDienThoai(null);
+		KhachHangDAO instance = new KhachHangDAO();
+		instance.update(model);
+	}
+
+	@Test()
+	public void UpdateWithoutAddress() {
+		KhachHang model = new KhachHang();
+		model.setGhichu(null);
+		KhachHangDAO instance = new KhachHangDAO();
+		instance.update(model);
+	}
+
+	@Test(expectedExceptions = Exception.class)
+	public void testFindByIdValid() throws Exception {
+		TestResultNG.put("" + count++,
+				new Object[] { "BH002", "Kiểm Tra Mã Khách Hàng Đã Đăng Ký Mã Thành Viên Hay Chưa?",
+						"1. Nhập Mã Khách Hàng: KH001\n " + " 2.Click Xác Nhận", "Valid", "Hiển Thị Thông Tin Và Điểm",
+						XDate.toString(new Date(), "dd/MM/yyyy"), "Pass" });
+		String makh = "KH001";
+		KhachHang model = new KhachHang();
+		List<KhachHang> ls = new ArrayList<>();
+		ls.add(model);
+		PowerMockito.doReturn(ls).when(khdaospy, "select", ArgumentMatchers.anyString(), ArgumentMatchers.any());
+		KhachHang rs = khdaospy.selectByID(makh);
+		Assert.assertThat(rs, CoreMatchers.is(model));
+
+	}
+
+	@Test(expectedExceptions = Exception.class)
+	public void testNotFindById() throws Exception {
+		TestResultNG.put("" + count++,
+				new Object[] { "BH002", "Kiểm Tra Mã Khách Hàng Đã Đăng Ký Mã Thành Viên Hay Chưa?",
+						"1. Nhập Mã Khách Hàng: \n " + " 2.Click Xác Nhận", "Valid", "Hiển Thị Thông Tin Và Điểm",
+						XDate.toString(new Date(), "dd/MM/yyyy"), "Pail" });
+		String makh = "2523";
+		KhachHang model = null;
+		List<KhachHang> ls = new ArrayList<>();
+//        ls.add(model);
+		PowerMockito.doReturn(ls).when(khdaospy, "select", ArgumentMatchers.anyString(), ArgumentMatchers.any());
+		KhachHang rs = khdaospy.selectByID(makh);
+		Assert.assertThat(rs, CoreMatchers.is(model));
+
+	}
+
+	// moi update
+	public void testPindById() throws Exception {
+
+		System.out.println("findID");
+		String maKH = "KH001";
+		KhachHang expectedResult = new KhachHang();
+
+		List<KhachHang> resultList = new ArrayList<>();
+		resultList.add(expectedResult);
+		PowerMockito.doReturn(resultList).when(khdaospy, "selectBySQL", ArgumentMatchers.anyString(),
+				ArgumentMatchers.any());
+		TestResultNG.put("" + count++,
+				new Object[] { "BH002", "Kiểm Tra Mã Khách Hàng Đã Đăng Ký Mã Thành Viên Hay Chưa?",
+						"1. Nhập Mã Khách Hàng:KH001 \n " + " 2.Click Xác Nhận", "Valid", "Hiển Thị Thông Tin Và Điểm",
+						XDate.toString(new Date(), "dd/MM/yyyy"), "Pass" });
+		KhachHang result = khdaospy.selectByID(maKH);
+		org.junit.Assert.assertThat(result, CoreMatchers.is(expectedResult));
+//		assertThat(result, CoreMatchers.is(expectedResult));
+	}
+
+	@Test
+	public void testPindByIdNull() throws Exception {
+		System.out.println("findID");
+		String maKH = null;
+		KhachHang expectedResult = new KhachHang();
+
+		List<KhachHang> resultList = new ArrayList<>();
+		resultList.add(expectedResult);
+		PowerMockito.doReturn(resultList).when(khdaospy, "selectBySQL", ArgumentMatchers.anyString(),
+				ArgumentMatchers.any());
+
+		KhachHang result = khdaospy.selectByID(maKH);
+		org.junit.Assert.assertThat(result, CoreMatchers.is(expectedResult));
+//		assertThat(result, CoreMatchers.is(expectedResult));
+	}
+
+	@Test
+	public void testPindByIdValidInt() throws Exception {
+		System.out.println("findID");
+		String maKH = String.valueOf("abc");
+		KhachHang expectedResult = new KhachHang();
+
+		List<KhachHang> resultList = new ArrayList<>();
+		resultList.add(expectedResult);
+		PowerMockito.doReturn(resultList).when(khdaospy, "selectBySQL", ArgumentMatchers.anyString(),
+				ArgumentMatchers.any());
+
+		KhachHang result = khdaospy.selectByID(maKH);
+		org.junit.Assert.assertThat(result, CoreMatchers.is(expectedResult));
+//		assertThat(result, CoreMatchers.is(expectedResult));
+	}
+
+}

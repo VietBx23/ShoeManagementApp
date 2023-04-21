@@ -1,0 +1,378 @@
+package com.snethlios.dao;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.hamcrest.CoreMatchers;
+import org.junit.Assert;
+import org.mockito.ArgumentMatchers;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.testng.IObjectFactory;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.ObjectFactory;
+import org.testng.annotations.Test;
+
+import com.snethlios.entity.ChiTietPhieuXuat;
+import com.snethlios.entity.KhuyenMai;
+import com.snethlios.entity.PhieuXuat;
+import com.snethlios.utils.JdbcHelper;
+import com.snethlios.utils.XDate;
+
+@PrepareForTest({ JdbcHelper.class, PhieuXuatDAO.class })
+public class PhieuXuatDAOTest {
+	PhieuXuatDAO phieuXuatDAO;
+	PhieuXuatDAO phieuXuatSpy;
+
+	public PhieuXuatDAOTest() {
+
+	}
+
+	HSSFWorkbook workBook;
+	HSSFSheet sheet;
+	Map<String, Object[]> TestResultNG = new HashMap<String, Object[]>();
+	int count = 0;
+
+	@ObjectFactory
+	public IObjectFactory getObjectFactory() {
+		return new org.powermock.modules.testng.PowerMockObjectFactory();
+	}
+
+	@BeforeClass
+	public void setUpClass() throws Exception {
+		workBook = new HSSFWorkbook();
+		sheet = workBook.createSheet("Kết quả test");
+
+		TestResultNG.put("" + count++, new Object[] { "ID", "Test Case Description", "Test Case Procedure", "Test Data",
+				"Expected Output", "Test Date", "Result" });
+	}
+
+	@AfterClass
+	public void tearDownClass() throws Exception {
+		System.out.println("Create File Excel");
+		Set<String> keySet = TestResultNG.keySet();
+		int rowNum = 0;
+		for (String key : keySet) {
+			Row row = sheet.createRow(rowNum++);
+			Object[] objArr = TestResultNG.get(key);
+			int cellNum = 0;
+			for (Object obj : objArr) {
+				Cell cell = row.createCell(cellNum++);
+				if (obj instanceof Date) {
+					cell.setCellValue((Date) obj);
+				} else if (obj instanceof Boolean) {
+					cell.setCellValue((Boolean) obj);
+				} else if (obj instanceof String) {
+					cell.setCellValue((String) obj);
+				} else if (obj instanceof Double) {
+					cell.setCellValue((Double) obj);
+				} else if (obj instanceof Integer) {
+					cell.setCellValue((Integer) obj);
+				}
+			}
+		}
+		try {
+			FileOutputStream out = new FileOutputStream(new File("TextPhieuXuatDao123.xls"));
+			workBook.write(out);
+			out.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			System.out.println(e.getMessage());
+		}
+	}
+
+	@BeforeMethod
+	public void beforeTest() {
+		phieuXuatDAO = new PhieuXuatDAO();
+		PowerMockito.mockStatic(JdbcHelper.class);
+		phieuXuatSpy = PowerMockito.spy(new PhieuXuatDAO());
+	}
+
+	@Test
+	public void deleteTest() {
+		int soPX = 2;
+		PhieuXuatDAO instance = new PhieuXuatDAO();
+		TestResultNG.put("" + count++,
+				new Object[] { "BH008", "Xóa Hóa Đơn", "1. Chọn Hóa Đơn Cần Xóa" + "\n " + "2. Click Xóa ", "Valid",
+						"Thông Báo: Xóa Phiếu Xuất Thành Công", XDate.toString(new Date(), "dd/MM/yyyy"), "PASS" });
+		instance.delete(soPX);
+	}
+
+	@Test(expectedExceptions = Exception.class)
+	public void deleteTestValidSoPXNull() {
+		TestResultNG.put("" + count++,
+				new Object[] { "BH008", "Xóa Hóa Đơn", "1. Chọn Hóa Đơn Cần Xóa" + "\n " + "2. Click Xóa ", "Valid",
+						"Thông Báo: Xóa Phiếu Xuất Thành Công", XDate.toString(new Date(), "dd/MM/yyyy"), "PASS" });
+		PhieuXuat model = new PhieuXuat();
+		int soPx = Integer.parseInt(null);
+		PhieuXuatDAO instance = new PhieuXuatDAO();
+
+		instance.delete(soPx);
+
+	}
+
+	@Test(expectedExceptions = Exception.class)
+	public void deleteValiSoPX() {
+		PhieuXuat model = new PhieuXuat();
+		int soPX = Integer.parseInt("baa");
+		PhieuXuatDAO instance = new PhieuXuatDAO();
+		instance.delete(soPX);
+		TestResultNG.put("" + count++,
+				new Object[] { "BH008", "Xóa Hóa Đơn", "1. Chọn Hóa Đơn Cần Xóa" + "\n " + "2. Click Xóa ", "Valid",
+						"Thông Báo: Xóa Phiếu Xuất Thành Công", XDate.toString(new Date(), "dd/MM/yyyy"), "PASS" });
+	}
+
+	@Test
+	public void insertTest() {
+		PhieuXuat model = new PhieuXuat();
+//		model.setSoPX(1);
+		model.setMaKH("KH001");
+		model.setMaNV("HaiNV");
+		model.setTongTien(3000);
+		model.setHinhThucThanhToan("trực tiếp");
+		model.setLyDoHuy("không");
+		model.setNgayTao(XDate.toDate(XDate.toString(new Date(), "yyyy/MM/dd"), "yyyy/MM/dd"));
+		model.setTongGiamGia(2000);
+		model.setTrangThai("Đã Thanh Toán");
+		PhieuXuatDAO instance = new PhieuXuatDAO();
+		instance.insert(model);
+
+		TestResultNG.put("" + count++, new Object[] { "BH004", "Thanh Toán Hóa Đơn",
+				"1.Click Thanh Toán Hóa Đơn" + "\n " + "2. Nhập Thông Tin \n" + " Mã Khách Hàng: \"KH001\"\n"
+						+ " Mã Nhân Viên: \"NV001\"\n" + " Tổng Tiền: 2000\n" + " Hình Thức Thanh Toán: \"Trực Tiếp\"\n"
+						+ " Lý Do Hủy: \"Không\"\n" + " Ngày Tạo: \"2023-04-02\"\n" + " Tổng Giảm Giá: 2000\n"
+						+ " Trạng Thái: Đã Thanh Toán\n" + "3. Click Thanh Toán\"",
+				"Valid", "Thông Báo: Xóa Phiếu Xuất Thành Công", XDate.toString(new Date(), "dd/MM/yyyy"), "PASS" });
+
+	}
+
+	@Test
+	public void insertTestValidMaKh() {
+		PhieuXuat model = new PhieuXuat();
+//		model.setSoPX(1);
+		model.setMaKH(null);
+		model.setMaNV("HaiNV");
+		model.setTongTien(3000);
+		model.setHinhThucThanhToan("trực tiếp");
+		model.setLyDoHuy("không");
+		model.setNgayTao(XDate.toDate(XDate.toString(new Date(), "yyyy/MM/dd"), "yyyy/MM/dd"));
+		model.setTongGiamGia(2000);
+		model.setTrangThai("Đã Thanh Toán");
+		PhieuXuatDAO instance = new PhieuXuatDAO();
+		instance.insert(model);
+		TestResultNG.put("" + count++,
+				new Object[] { "BH004", "Thanh Toán Hóa Đơn Không Có Mã Khách Hàng",
+						"1.Click Thanh Toán Hóa Đơn" + "\n " + "2. Nhập Thông Tin: Mã Khách Hàng: \"\"\n"
+								+ " Tiền Khách Đưa: \20000\"\n" + " Mã Nhân Viên: \"NV001\"\n" + " Tổng Tiền: 2000\n"
+								+ " Hình Thức Thanh Toán: \"Trực Tiếp\"\n" + " Lý Do Hủy: \"Không\"\n"
+								+ " Ngày Tạo: \"2023-04-02\"\n" + " Tổng Giảm Giá: 2000\n"
+								+ " Trạng Thái: Đã Thanh Toán\n" + "3. Click Thanh Toán\" " + "\n",
+						"Valid", "Thông Báo: Xóa Phiếu Xuất Thành Công", XDate.toString(new Date(), "dd/MM/yyyy"),
+						"PAIL" });
+
+	}
+
+	@Test
+	public void insertTestValidMaNV() {
+		PhieuXuat model = new PhieuXuat();
+//		model.setSoPX(1);
+		model.setMaKH("KH001");
+		model.setMaNV(null);
+		model.setTongTien(3000);
+		model.setHinhThucThanhToan("trực tiếp");
+		model.setLyDoHuy("không");
+		model.setNgayTao(XDate.toDate(XDate.toString(new Date(), "yyyy/MM/dd"), "yyyy/MM/dd"));
+		model.setTongGiamGia(2000);
+		model.setTrangThai("Đã Thanh Toán");
+		PhieuXuatDAO instance = new PhieuXuatDAO();
+		instance.insert(model);
+		TestResultNG.put("" + count++,
+				new Object[] { "BH004", "Thanh Toán Hóa Đơn Không Có Mã Nhân Viên",
+						"1.Click Thanh Toán Hóa Đơn" + "\n " + "2. Nhập Thông Tin \n" + " Mã Khách Hàng: \"KH001\"\n"
+								+ " Tiền Khách Đưa: \20000\"\n" + " Mã Nhân Viên: \"\"\n" + " Tổng Tiền: 2000\n"
+								+ " Hình Thức Thanh Toán: \"Trực Tiếp\"\n" + " Lý Do Hủy: \"Không\"\n"
+								+ " Ngày Tạo: \"2023-04-02\"\n" + " Tổng Giảm Giá: 2000\n"
+								+ " Trạng Thái: Đã Thanh Toán" + "3. Click Thanh Toán\" " + "\n",
+						"Valid", "Thông Báo: Xóa Phiếu Xuất Thành Công", XDate.toString(new Date(), "dd/MM/yyyy"),
+						"PAIL" });
+
+	}
+
+	@Test
+	public void insertTestValidTienKhachDua() {
+		TestResultNG.put("" + count++,
+				new Object[] { "BH004", "Thanh Toán Hóa Đơn Nhập Tiền Khách Đưa Bằng Kí Tự Chuỗi",
+						"1.Click Thanh Toán Hóa Đơn" + "\n " + "2. Nhập Thông Tin \n" + " Mã Khách Hàng: \"KH001\"\n"
+								+ " Tiền Khách Đưa: \20000\"\n" + " Mã Nhân Viên: \"\"\n" + " Tổng Tiền: 2000\n"
+								+ " Hình Thức Thanh Toán: \"Trực Tiếp\"\n" + " Lý Do Hủy: \"Không\"\n"
+								+ " Ngày Tạo: \"2023-04-02\"\n" + " Tổng Giảm Giá: 2000\n"
+								+ " Trạng Thái: Đã Thanh Toán" + "3. Click Thanh Toán\" " + "\n",
+						"Valid", "Thông Báo: Xóa Phiếu Xuất Thành Công", XDate.toString(new Date(), "dd/MM/yyyy"),
+						"PAIL" });
+		PhieuXuat model = new PhieuXuat();
+//		model.setSoPX(1);
+		double tienKhachHangDua = Double.parseDouble("abc");
+		model.setMaKH("KH001");
+		model.setMaNV("NV001");
+		model.setTongTien(20000);
+		model.setHinhThucThanhToan("trực tiếp");
+		model.setLyDoHuy("không");
+		model.setNgayTao(XDate.toDate(XDate.toString(new Date(), "yyyy/MM/dd"), "yyyy/MM/dd"));
+		model.setTongGiamGia(2000);
+		model.setTrangThai("Đã Thanh Toán");
+		PhieuXuatDAO instance = new PhieuXuatDAO();
+		instance.insert(model);
+
+	}
+
+	@Test
+	public void insertTestValidHTTT() {
+		TestResultNG.put("" + count++,
+				new Object[] { "BH004", "Thanh Toán Hóa Đơn Không Chọn Hình Thức Thanh Toán",
+						"1.Click Thanh Toán Hóa Đơn" + "\n " + "2. Nhập Thông Tin \n" + " Mã Khách Hàng: \"KH001\"\n"
+								+ " Tiền Khách Đưa: \20000\"\n" + " Mã Nhân Viên: \"\"\n" + " Tổng Tiền: 2000\n"
+								+ " Hình Thức Thanh Toán: \"\"\n" + " Lý Do Hủy: \"Không\"\n"
+								+ " Ngày Tạo: \"2023-04-02\"\n" + " Tổng Giảm Giá: 2000\n"
+								+ " Trạng Thái: Đã Thanh Toán" + "3. Click Thanh Toán\" " + "\n",
+						"Valid", "Thông Báo: Xóa Phiếu Xuất Thành Công", XDate.toString(new Date(), "dd/MM/yyyy"),
+						"PAIL" });
+		PhieuXuat model = new PhieuXuat();
+//		model.setSoPX(1);
+		model.setMaKH("KH001");
+		model.setMaNV(null);
+		model.setTongTien(20000);
+		model.setHinhThucThanhToan(null);
+		model.setLyDoHuy("không");
+		model.setNgayTao(XDate.toDate(XDate.toString(new Date(), "yyyy/MM/dd"), "yyyy/MM/dd"));
+		model.setTongGiamGia(2000);
+		model.setTrangThai("Đã Thanh Toán");
+		PhieuXuatDAO instance = new PhieuXuatDAO();
+		instance.insert(model);
+	}
+
+	@Test
+	public void insertTestValidLyDoHuy() {
+		PhieuXuat model = new PhieuXuat();
+//		model.setSoPX(1);
+		model.setMaKH("KH001");
+		model.setMaNV("NV01");
+		model.setTongTien(20000);
+		model.setHinhThucThanhToan("Trực Tiếp");
+		model.setLyDoHuy(null);
+		model.setNgayTao(XDate.toDate(XDate.toString(new Date(), "yyyy/MM/dd"), "yyyy/MM/dd"));
+		model.setTongGiamGia(2000);
+		model.setTrangThai("Đã Thanh Toán");
+		PhieuXuatDAO instance = new PhieuXuatDAO();
+		instance.insert(model);
+	}
+
+	@Test
+	public void insertTestValidNgayTao() {
+		PhieuXuat model = new PhieuXuat();
+//		model.setSoPX(1);
+		model.setMaKH("KH001");
+		model.setMaNV("NV01");
+		model.setTongTien(20000);
+		model.setHinhThucThanhToan("Trực Tiếp");
+		model.setLyDoHuy("không");
+		model.setNgayTao(null);
+		model.setTongGiamGia(2000);
+		model.setTrangThai("Đã Thanh Toán");
+		PhieuXuatDAO instance = new PhieuXuatDAO();
+		instance.insert(model);
+	}
+
+	@Test(expectedExceptions = Exception.class)
+	public void insertTestValidTongGiamGia() {
+		PhieuXuat model = new PhieuXuat();
+//		model.setSoPX(1);
+		model.setMaKH("KH001");
+		model.setMaNV("NV01");
+		model.setTongTien(20000);
+		model.setHinhThucThanhToan("Trực Tiếp");
+		model.setLyDoHuy("không");
+		model.setNgayTao(XDate.toDate(XDate.toString(new Date(), "yyyy/MM/dd"), "yyyy/MM/dd"));
+		model.setTongGiamGia(Double.parseDouble("abc"));
+		model.setTrangThai("Đã Thanh Toán");
+		PhieuXuatDAO instance = new PhieuXuatDAO();
+		instance.insert(model);
+	}
+
+	@Test(expectedExceptions = Exception.class)
+	public void insertTestValidTrangThai() {
+		TestResultNG.put("" + count++,
+				new Object[] { "BH004", "Thanh Toán Hóa Đơn Không Chọn Trang Thái",
+						"1.Click Thanh Toán Hóa Đơn" + "\n " + "2. Nhập Thông Tin \n" + " Mã Khách Hàng: \"KH001\"\n"
+								+ " Tiền Khách Đưa: \20000\"\n" + " Mã Nhân Viên: \"\"\n" + " Tổng Tiền: 2000\n"
+								+ " Hình Thức Thanh Toán: \"Trực Tiếp\"\n" + " Lý Do Hủy: \"Không\"\n"
+								+ " Ngày Tạo: \"2023-04-02\"\n" + " Tổng Giảm Giá: 2000\n"
+								+ " Trạng Thái: Đã Thanh Toán" + "3. Click Thanh Toán\" " + "\n",
+						"Valid", "Thông Báo: Xóa Phiếu Xuất Thành Công", XDate.toString(new Date(), "dd/MM/yyyy"),
+						"PAIL" });
+		PhieuXuat model = new PhieuXuat();
+//		model.setSoPX(1);
+		model.setMaKH("KH001");
+		model.setMaNV(null);
+		model.setTongTien(Double.parseDouble("hello"));
+		model.setHinhThucThanhToan("trực tiếp");
+		model.setLyDoHuy("không");
+		model.setNgayTao(XDate.toDate(XDate.toString(new Date(), "yyyy/MM/dd"), "yyyy/MM/dd"));
+		model.setTongGiamGia(2000);
+		model.setTrangThai(null);
+		PhieuXuatDAO instance = new PhieuXuatDAO();
+		instance.insert(model);
+	}
+
+	@Test
+	public void testselectAll() throws Exception {
+
+		PhieuXuat model = new PhieuXuat();
+		List<PhieuXuat> expResult = new ArrayList<>();
+		expResult.add(model);
+
+		PowerMockito.doReturn(expResult).when(phieuXuatSpy, "selectBySQL", ArgumentMatchers.anyString());
+		List<PhieuXuat> result = phieuXuatSpy.selectAll();
+		Assert.assertThat(result, CoreMatchers.is(expResult));
+
+	}
+
+	@Test
+	public void testselectByID() throws Exception {
+		int soPX = 1;
+		PhieuXuat model = new PhieuXuat();
+		List<PhieuXuat> expResult = new ArrayList<>();
+		expResult.add(model);
+
+		PowerMockito.doReturn(expResult).when(phieuXuatSpy, "selectBySQL", ArgumentMatchers.anyString(),
+				ArgumentMatchers.any());
+		PhieuXuat result = phieuXuatSpy.selectByID(soPX);
+		Assert.assertThat(result, CoreMatchers.is(model));
+
+	}
+
+	@Test(expectedExceptions = Exception.class)
+	public void testSelectByCBO() throws Exception {
+		String trangThai = "Đã Thanh Toán";
+		PhieuXuat model = new PhieuXuat();
+		List<PhieuXuat> expResult = new ArrayList<>();
+		expResult.add(model);
+
+		PowerMockito.doReturn(expResult).when(phieuXuatSpy, "selectBySQL", ArgumentMatchers.anyString());
+		List<PhieuXuat> result = phieuXuatSpy.selectByCBO(trangThai);
+		Assert.assertThat(result, CoreMatchers.is(expResult));
+
+	}
+
+}
